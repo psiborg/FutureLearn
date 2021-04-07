@@ -1,0 +1,12 @@
+Define a dictionary of available emojis.
+Create a function to randomly pick and display emojis.
+
+Create a loop to start the game and start the timer.
+Create the first emoji set with 9 random emojis using the Waffle and Picture widgets.
+Create the second emoji set with 9 random emojis.
+Randomly pick 1 emoji from the first set and randomly place it in the second set (overwriting an emoji).
+
+Add event(s) to check for clicks on the emojis.
+Check if the emojis match:
+    If there's a match, display "correct" message, increase score, and reset timer.
+    If there's no match, display "incorrect" message.
