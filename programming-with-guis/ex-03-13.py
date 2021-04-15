@@ -72,7 +72,7 @@ def setup_round():
     # set the command to be called and pass True, as this is the matching emoji
     buttons[random_button].update_command(match_emoji, [True])
 
-def reset():
+def reset_game():
     global player_num
     in_a_row = 0
     result.value = ""
@@ -84,7 +84,7 @@ def reset():
     return
 
 def counter():
-    global hi_scores, player_num
+    global hi_scores, player_num, play_mode
 
     timer.value = int(timer.value) - 1
     if int(timer.value) == 0:
@@ -92,14 +92,19 @@ def counter():
 
         # add score to high scores
         hi_scores.append(tuple((players[player_num]["label"].value, int(players[player_num]["score"].value))))
+        print(hi_scores)
         save_hiscores()
 
         result.value = "Game over!"
         result.text_color = "black"
 
-        prompt = app.yesno("Times up!", "Do you want to play again?")
-        if prompt == True:
-            reset()
+        if play_mode == "2":
+            start_2players()
+
+        else:
+            prompt = app.yesno("Times up!", "Do you want to play again?")
+            if prompt == True:
+                reset_game()
 
 def start_1player():
     global player_num
@@ -107,7 +112,9 @@ def start_1player():
     player_name = app.question("Player 1", "Enter your name")
     if player_name is not None:
         players[player_num]["label"].value = player_name
-        reset()
+        spacer1.value = "<<<"
+        spacer2.value = " "
+        reset_game()
     return
 
 def start_2players():
@@ -116,19 +123,30 @@ def start_2players():
     player_name = app.question("Player 2", "Enter your name")
     if player_name is not None:
         players[player_num]["label"].value = player_name
-        reset()
+        spacer1.value = " "
+        spacer2.value = ">>>"
+        reset_game()
     return
 
 def load_hiscores():
     if os.path.exists("hiscores.dat"):
         fh = open('hiscores.dat', 'rb')
+        # deserialize data
         hi_scores = pickle.load(fh)
         fh.close()
     else:
+        # populate with sample scores
         hi_scores = [
-            ("Tony Stark", 9),
-            ("Steve Rogers", 8),
-            ("Natasha Romanoff", 10)
+            ("Carol Danvers", 10),
+            ("Bruce Banner", 9),
+            ("Thor Odinson", 8),
+            ("Stephen Strange", 7),
+            ("Wanda Maximoff", 6),
+            ("Tony Stark", 5),
+            ("Steve Rogers", 4),
+            ("Peter Parker", 3),
+            ("Scott Lang", 2),
+            ("Natasha Romanoff", 1)
         ]
     #print("load_hiscores:", hi_scores, type(hi_scores))
     return hi_scores
@@ -137,6 +155,7 @@ def save_hiscores():
     global hi_scores
     #print("save_hiscores:", hi_scores)
     fh = open('hiscores.dat', 'wb')
+    # serialize data
     pickle.dump(hi_scores, fh)
     fh.close()
     return
@@ -151,7 +170,7 @@ def show_hiscores():
 
     hi_title = Text(wnd_hiscores, align="top", text="Top Players", size=18)
     hi_box = Box(wnd_hiscores, align="top", layout="grid")
-    hi_box.bg = "#CCCCCC"
+    #hi_box.bg = "#CCCCCC"
     scores = []
 
     hi_scores.sort(reverse=True, key=sort_hiscores)
@@ -172,19 +191,54 @@ def show_help():
     wnd_help.show(wait=True) # modal window
     return
 
-def clean_hiscores():
-    #(wnd_hiscores.children)
+def clear_hiscores_window():
+    for child in wnd_hiscores.children:
+        #print(child, type(child))
+        if hasattr(child, 'children'):
+            if child.children:
+                for grandchild in child.children:
+                    grandchild.destroy()
+                child.destroy()
+
+    for child in wnd_hiscores.children:
+        child.destroy()
+
     wnd_hiscores.hide()
+    return
+
+def quit_app():
+    confirm = app.yesno("Confirm", "Do you want to exit?")
+    if confirm == True:
+        app.destroy()
+
+    app.display()
     return
 
 #---[ Main ]------------------------------------------------------------------
 
 app = App("Emoji Match", layout="auto", width=640, height=480)
 
-wnd_hiscores = Window(app, title="High Scores", visible=False)
-wnd_hiscores.when_closed = clean_hiscores
+in_a_row = 0
+player_num = ""
+play_mode = "1"
 
-wnd_help = Window(app, title="Help", visible=False)
+# Set up High Score window
+
+wnd_hiscores = Window(app, title="High Scores", bg="#DDDDDD", visible=False)
+wnd_hiscores.when_closed = clear_hiscores_window
+
+hi_scores = load_hiscores()
+
+# Set up Help window
+
+wnd_help = Window(app, title="Help", bg="#DDDDDD", visible=False)
+help_box = Box(wnd_help, align="top", width="fill", layout="grid")
+help_title = Text(help_box, text="Scoring:", align="left", size=16, grid=[0,0])
+help_line1 = Text(help_box, text="    ◉ +1 pt for correct matches", align="left", grid=[0,1])
+help_line2 = Text(help_box, text="    ◉ –1 pt for incorrect guesses", align="left", grid=[0,2])
+help_line3 = Text(help_box, text="    ◉ For 3 matches in a row, extra time is added, randomly between 1-10 secs.", align="left", grid=[0,3])
+
+# Set up scoreboard
 
 scoreboard = Box(app, align="top", width="fill", layout="grid")
 scoreboard.bg = "#C0C0C0"
@@ -192,9 +246,9 @@ scoreboard.bg = "#C0C0C0"
 players = {"1": {}, "2": {}}
 
 players["1"]["label"] = Text(scoreboard, text="Player 1:", size=12, grid=[0,0,2,1])
-spacer1 = Text(scoreboard, text=" ", width=35, grid=[2,0])
+spacer1 = Text(scoreboard, text=" ", color="#990000", size=20, width=20, grid=[2,0,1,3])
 timer_lbl = Text(scoreboard, text="Timer: ", size=12, grid=[3,0])
-spacer2 = Text(scoreboard, text=" ", width=35, grid=[4,0])
+spacer2 = Text(scoreboard, text=" ", color="#990000", size=20, width=20, grid=[4,0,1,3])
 players["2"]["label"] = Text(scoreboard, text="Player 2:", size=12, grid=[5,0,2,1])
 
 players["1"]["score_label"] = Text(scoreboard, text="Score", size=10, grid=[0,1])
@@ -208,23 +262,14 @@ players["1"]["round"] = Text(scoreboard, text="0", size=20, grid=[1,2])
 players["2"]["score"] = Text(scoreboard, text="0", size=20, grid=[5,2])
 players["2"]["round"] = Text(scoreboard, text="0", size=20, grid=[6,2])
 
+# Set up game grids
+
 game_box = Box(app, align="top", layout="grid")
 result = Text(game_box, text="Ready?", size=24, grid=[0,0,3,1])
 pictures_box = Box(game_box, layout="grid", grid=[0,1], visible=False)
 spacer3 = Text(game_box, text=" ", width=10, grid=[1,1])
 buttons_box = Box(game_box, layout="grid", grid=[2,1], visible=False)
 instructions = Text(game_box, text="Choose an option:", size=10, grid=[0,2,3,1])
-
-controls_box = Box(app, align="top", layout="grid")
-btn_player1 = PushButton(controls_box, text="1 Player", image="./assets/btn_player1.gif", grid=[0,0], command=start_1player)
-btn_player2 = PushButton(controls_box, text="2 Players", image="./assets/btn_player2.gif", grid=[1,0], command=start_2players)
-btn_hiscores = PushButton(controls_box, text="High Scores", image="./assets/btn_hiscores.gif", grid=[2,0], command=show_hiscores)
-btn_help = PushButton(controls_box, text="Help", image="./assets/btn_help.gif", grid=[3,0], command=show_help)
-
-in_a_row = 0
-player_num = ""
-
-hi_scores = load_hiscores()
 
 buttons = []
 pictures = []
@@ -236,5 +281,14 @@ for x in range(0,3):
         
         button = PushButton(buttons_box, grid=[x,y])
         buttons.append(button)
+
+# Set up player controls
+
+controls_box = Box(app, align="top", layout="grid")
+btn_player1 = PushButton(controls_box, text="1 Player", image="./assets/btn_player1.gif", grid=[0,0], command=start_1player)
+btn_player2 = PushButton(controls_box, text="2 Players", image="./assets/btn_player2.gif", grid=[1,0], command=start_2players)
+btn_hiscores = PushButton(controls_box, text="High Scores", image="./assets/btn_hiscores.gif", grid=[2,0], command=show_hiscores)
+btn_help = PushButton(controls_box, text="Help", image="./assets/btn_help.gif", grid=[3,0], command=show_help)
+btn_exit = PushButton(controls_box, text="Exit", image="./assets/btn_exit.gif", grid=[4,0], command=quit_app)
 
 app.display()
