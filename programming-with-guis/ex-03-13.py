@@ -73,7 +73,7 @@ def setup_round():
     buttons[random_button].update_command(match_emoji, [True])
 
 def reset_game():
-    global player_num
+    global player_num, in_a_row
     in_a_row = 0
     result.value = ""
     players[player_num]["round"].value = "0"
@@ -84,7 +84,7 @@ def reset_game():
     return
 
 def counter():
-    global hi_scores, player_num, play_mode
+    global hi_scores, player_num
 
     timer.value = int(timer.value) - 1
     if int(timer.value) == 0:
@@ -95,36 +95,42 @@ def counter():
         print(hi_scores)
         save_hiscores()
 
-        result.value = "Game over!"
+        # check who won
+        msg = "Game over!"
+        if int(players["1"]["round"].value) > 1 and int(players["2"]["round"].value) > 1:
+            print(players["1"]["score"].value, players["2"]["score"].value)
+            if int(players["1"]["score"].value) > int(players["2"]["score"].value):
+                msg = "Player 1 won!"
+            elif int(players["2"]["score"].value) > int(players["1"]["score"].value):
+                msg = "Player 2 won!"
+            else:
+                msg = "It's a draw"
+
+        result.value = msg
         result.text_color = "black"
 
-        if play_mode == "2":
-            start_2players()
+        app.info("Info", msg)
 
+        # prompt = app.yesno(msg, "Do you want to play again?")
+        # if prompt == True:
+        #     reset_game()
+
+def start_game(num):
+    global player_num
+    player_num = num
+    player_name = app.question("Player " + num, "Enter your name")
+    if player_name is not None:
+        players[num]["label"].value = player_name
+        if num == "1":
+            spacer1.value = "<<<"
+            spacer2.value = " "
+        elif num == "2":
+            spacer1.value = " "
+            spacer2.value = ">>>"
         else:
-            prompt = app.yesno("Times up!", "Do you want to play again?")
-            if prompt == True:
-                reset_game()
+            spacer1.value = " "
+            spacer2.value = " "
 
-def start_1player():
-    global player_num
-    player_num = "1"
-    player_name = app.question("Player 1", "Enter your name")
-    if player_name is not None:
-        players[player_num]["label"].value = player_name
-        spacer1.value = "<<<"
-        spacer2.value = " "
-        reset_game()
-    return
-
-def start_2players():
-    global player_num
-    player_num = "2"
-    player_name = app.question("Player 2", "Enter your name")
-    if player_name is not None:
-        players[player_num]["label"].value = player_name
-        spacer1.value = " "
-        spacer2.value = ">>>"
         reset_game()
     return
 
@@ -177,12 +183,15 @@ def show_hiscores():
     #print(hi_scores)
 
     for x in range(0, len(hi_scores)):
-        hi_line = Text(hi_box, text=str(x+1)+". ", align="left", grid=[0,x])
-        scores.append(hi_line)
-        for y in range(0, len(hi_scores[x])):
-            #print(x,y,hi_scores[x][y])
-            hi_line = Text(hi_box, text=hi_scores[x][y], align="left", grid=[y+1,x])
+        if x < 20:
+            hi_line = Text(hi_box, text=str(x+1)+". ", align="left", grid=[0,x])
             scores.append(hi_line)
+            for y in range(0, len(hi_scores[x])):
+                #print(x,y,hi_scores[x][y])
+                hi_line = Text(hi_box, text=hi_scores[x][y], align="left", grid=[y+1,x])
+                scores.append(hi_line)
+        else:
+            break
 
     wnd_hiscores.show(wait=True) # modal window
     return
@@ -191,6 +200,8 @@ def show_help():
     wnd_help.show(wait=True) # modal window
     return
 
+# clear the contents since the high score list is appended each time the
+# window is opened
 def clear_hiscores_window():
     for child in wnd_hiscores.children:
         #print(child, type(child))
@@ -220,7 +231,6 @@ app = App("Emoji Match", layout="auto", width=640, height=480)
 
 in_a_row = 0
 player_num = ""
-play_mode = "1"
 
 # Set up High Score window
 
@@ -233,10 +243,14 @@ hi_scores = load_hiscores()
 
 wnd_help = Window(app, title="Help", bg="#DDDDDD", visible=False)
 help_box = Box(wnd_help, align="top", width="fill", layout="grid")
-help_title = Text(help_box, text="Scoring:", align="left", size=16, grid=[0,0])
-help_line1 = Text(help_box, text="    ◉ +1 pt for correct matches", align="left", grid=[0,1])
-help_line2 = Text(help_box, text="    ◉ –1 pt for incorrect guesses", align="left", grid=[0,2])
-help_line3 = Text(help_box, text="    ◉ For 3 matches in a row, extra time is added, randomly between 1-10 secs.", align="left", grid=[0,3])
+
+help_sec1_title = Text(help_box, text="How to play:", align="left", size=16, grid=[0,0])
+help_sec1_line1 = Text(help_box, text="    ◉ Each player takes turns by clicking either the 'Player 1' or 'Player 2' buttons", align="left", grid=[0,1])
+
+help_sec2_title = Text(help_box, text="Scoring:", align="left", size=16, grid=[0,2])
+help_sec2_line1 = Text(help_box, text="    ◉ +1 pt for correct matches", align="left", grid=[0,3])
+help_sec2_line2 = Text(help_box, text="    ◉ –1 pt for incorrect guesses", align="left", grid=[0,4])
+help_sec2_line3 = Text(help_box, text="    ◉ For 3 matches in a row, extra time is added, randomly between 1-10 secs.", align="left", grid=[0,5])
 
 # Set up scoreboard
 
@@ -285,8 +299,8 @@ for x in range(0,3):
 # Set up player controls
 
 controls_box = Box(app, align="top", layout="grid")
-btn_player1 = PushButton(controls_box, text="1 Player", image="./assets/btn_player1.gif", grid=[0,0], command=start_1player)
-btn_player2 = PushButton(controls_box, text="2 Players", image="./assets/btn_player2.gif", grid=[1,0], command=start_2players)
+btn_player1 = PushButton(controls_box, text="1 Player", image="./assets/btn_player1.gif", grid=[0,0], command=start_game, args=["1"])
+btn_player2 = PushButton(controls_box, text="2 Players", image="./assets/btn_player2.gif", grid=[1,0], command=start_game, args=["2"])
 btn_hiscores = PushButton(controls_box, text="High Scores", image="./assets/btn_hiscores.gif", grid=[2,0], command=show_hiscores)
 btn_help = PushButton(controls_box, text="Help", image="./assets/btn_help.gif", grid=[3,0], command=show_help)
 btn_exit = PushButton(controls_box, text="Exit", image="./assets/btn_exit.gif", grid=[4,0], command=quit_app)
