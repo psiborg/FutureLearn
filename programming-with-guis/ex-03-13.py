@@ -2,7 +2,7 @@
 # programming-with-guis
 # Ex. 3.13
 
-import os
+import os, pickle
 from random import shuffle, randint
 from guizero import App, Box, ListBox, Picture, PushButton, Text, Window, warn
 
@@ -39,6 +39,9 @@ def match_emoji(matched):
     setup_round()
 
 def setup_round():
+    pictures_box.visible = True
+    buttons_box.visible = True
+
     players[player_num]["round"].value = int(players[player_num]["round"].value) + 1
 
     emojis = load_emojis()
@@ -81,7 +84,7 @@ def reset():
     return
 
 def counter():
-    global player_num
+    global hi_scores, player_num
 
     timer.value = int(timer.value) - 1
     if int(timer.value) == 0:
@@ -89,6 +92,7 @@ def counter():
 
         # add score to high scores
         hi_scores.append(tuple((players[player_num]["label"].value, int(players[player_num]["score"].value))))
+        save_hiscores()
 
         result.value = "Game over!"
         result.text_color = "black"
@@ -115,6 +119,28 @@ def start_2players():
         reset()
     return
 
+def load_hiscores():
+    if os.path.exists("hiscores.dat"):
+        fh = open('hiscores.dat', 'rb')
+        hi_scores = pickle.load(fh)
+        fh.close()
+    else:
+        hi_scores = [
+            ("Tony Stark", 9),
+            ("Steve Rogers", 8),
+            ("Natasha Romanoff", 10)
+        ]
+    #print("load_hiscores:", hi_scores, type(hi_scores))
+    return hi_scores
+
+def save_hiscores():
+    global hi_scores
+    #print("save_hiscores:", hi_scores)
+    fh = open('hiscores.dat', 'wb')
+    pickle.dump(hi_scores, fh)
+    fh.close()
+    return
+
 # sort list of tuples by second element
 # https://www.afternerd.com/blog/python-sort-list/#sort-tuples-second-element
 def sort_hiscores(t):
@@ -129,7 +155,7 @@ def show_hiscores():
     scores = []
 
     hi_scores.sort(reverse=True, key=sort_hiscores)
-    print(hi_scores)
+    #print(hi_scores)
 
     for x in range(0, len(hi_scores)):
         hi_line = Text(hi_box, text=str(x+1)+". ", align="left", grid=[0,x])
@@ -151,7 +177,8 @@ def clean_hiscores():
     wnd_hiscores.hide()
     return
 
-# setup the app
+#---[ Main ]------------------------------------------------------------------
+
 app = App("Emoji Match", layout="auto", width=640, height=480)
 
 wnd_hiscores = Window(app, title="High Scores", visible=False)
@@ -182,10 +209,11 @@ players["2"]["score"] = Text(scoreboard, text="0", size=20, grid=[5,2])
 players["2"]["round"] = Text(scoreboard, text="0", size=20, grid=[6,2])
 
 game_box = Box(app, align="top", layout="grid")
-result = Text(game_box, text="Ready?", size=24, grid=[0,0,2,1])
-pictures_box = Box(game_box, layout="grid", grid=[0,1])
-buttons_box = Box(game_box, layout="grid", grid=[1,1])
-instructions = Text(game_box, text="Choose an option:", size=10, grid=[0,2,2,1])
+result = Text(game_box, text="Ready?", size=24, grid=[0,0,3,1])
+pictures_box = Box(game_box, layout="grid", grid=[0,1], visible=False)
+spacer3 = Text(game_box, text=" ", width=10, grid=[1,1])
+buttons_box = Box(game_box, layout="grid", grid=[2,1], visible=False)
+instructions = Text(game_box, text="Choose an option:", size=10, grid=[0,2,3,1])
 
 controls_box = Box(app, align="top", layout="grid")
 btn_player1 = PushButton(controls_box, text="1 Player", image="./assets/btn_player1.gif", grid=[0,0], command=start_1player)
@@ -196,11 +224,7 @@ btn_help = PushButton(controls_box, text="Help", image="./assets/btn_help.gif", 
 in_a_row = 0
 player_num = ""
 
-hi_scores = [
-    ("Tony Stark", 9),
-    ("Steve Rogers", 8),
-    ("Natasha Romanoff", 10)
-]
+hi_scores = load_hiscores()
 
 buttons = []
 pictures = []
