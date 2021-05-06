@@ -174,7 +174,7 @@ def sort_hiscores(t):
 def show_hiscores():
     global hi_scores
 
-    hi_title = Text(wnd_hiscores, align="top", text="Top Players", size=18)
+    hi_title = Text(wnd_hiscores, font=font_default, align="top", text="Top Players", size=18)
     hi_box = Box(wnd_hiscores, align="top", layout="grid")
     #hi_box.bg = "#CCCCCC"
     scores = []
@@ -184,11 +184,11 @@ def show_hiscores():
 
     for x in range(0, len(hi_scores)):
         if x < 20:
-            hi_line = Text(hi_box, text=str(x+1)+". ", align="left", grid=[0,x])
+            hi_line = Text(hi_box, font=font_default, text=str(x+1)+". ", align="left", grid=[0,x])
             scores.append(hi_line)
             for y in range(0, len(hi_scores[x])):
                 #print(x,y,hi_scores[x][y])
-                hi_line = Text(hi_box, text=hi_scores[x][y], align="left", grid=[y+1,x])
+                hi_line = Text(hi_box, font=font_default, text=hi_scores[x][y], align="left", grid=[y+1,x])
                 scores.append(hi_line)
         else:
             break
@@ -229,6 +229,8 @@ def quit_app():
 
 app = App("Emoji Match", layout="auto", width=640, height=480)
 
+font_default = "JetBrains Mono"
+
 in_a_row = 0
 player_num = ""
 
@@ -244,13 +246,13 @@ hi_scores = load_hiscores()
 wnd_help = Window(app, title="Help", bg="#DDDDDD", visible=False)
 help_box = Box(wnd_help, align="top", width="fill", layout="grid")
 
-help_sec1_title = Text(help_box, text="How to play:", align="left", size=16, grid=[0,0])
-help_sec1_line1 = Text(help_box, text="    ◉ Each player takes turns by clicking either the 'Player 1' or 'Player 2' buttons", align="left", grid=[0,1])
+help_sec1_title = Text(help_box, font=font_default, text="How to play:", align="left", size=16, grid=[0,0])
+help_sec1_line1 = Text(help_box, font=font_default, text="    ◉ Each player takes turns by clicking either the 'Player 1' or 'Player 2' buttons", align="left", grid=[0,1])
 
-help_sec2_title = Text(help_box, text="Scoring:", align="left", size=16, grid=[0,2])
-help_sec2_line1 = Text(help_box, text="    ◉ +1 pt for correct matches", align="left", grid=[0,3])
-help_sec2_line2 = Text(help_box, text="    ◉ –1 pt for incorrect guesses", align="left", grid=[0,4])
-help_sec2_line3 = Text(help_box, text="    ◉ For 3 matches in a row, extra time is added, randomly between 1-10 secs.", align="left", grid=[0,5])
+help_sec2_title = Text(help_box, font=font_default, text="Scoring:", align="left", size=16, grid=[0,2])
+help_sec2_line1 = Text(help_box, font=font_default, text="    ◉ +1 pt for correct matches", align="left", grid=[0,3])
+help_sec2_line2 = Text(help_box, font=font_default, text="    ◉ –1 pt for incorrect guesses", align="left", grid=[0,4])
+help_sec2_line3 = Text(help_box, font=font_default, text="    ◉ For 3 matches in a row, extra time is added, randomly between 1-10 secs.", align="left", grid=[0,5])
 
 # Set up scoreboard
 
@@ -259,31 +261,33 @@ scoreboard.bg = "#C0C0C0"
 
 players = {"1": {}, "2": {}}
 
-players["1"]["label"] = Text(scoreboard, text="Player 1:", size=12, grid=[0,0,2,1])
-spacer1 = Text(scoreboard, text=" ", color="#990000", size=20, width=20, grid=[2,0,1,3])
-timer_lbl = Text(scoreboard, text="Timer: ", size=12, grid=[3,0])
-spacer2 = Text(scoreboard, text=" ", color="#990000", size=20, width=20, grid=[4,0,1,3])
-players["2"]["label"] = Text(scoreboard, text="Player 2:", size=12, grid=[5,0,2,1])
+players["1"]["label"] = Text(scoreboard, font=font_default, text="Player 1:", size=12, grid=[0,0,2,1])
+spacer1 = Text(scoreboard, font=font_default, text=" ", color="#990000", size=20, width=20, grid=[2,0,1,3])
+timer_lbl = Text(scoreboard, font=font_default, text="Timer: ", size=12, grid=[3,0])
+spacer2 = Text(scoreboard, font=font_default, text=" ", color="#990000", size=20, width=20, grid=[4,0,1,3])
+players["2"]["label"] = Text(scoreboard, font=font_default, text="Player 2:", size=12, grid=[5,0,2,1])
 
-players["1"]["score_label"] = Text(scoreboard, text="Score", size=10, grid=[0,1])
-players["1"]["round_label"] = Text(scoreboard, text="Round", size=10, grid=[1,1])
-timer = Text(scoreboard, text="0", size=20, grid=[3,1])
-players["2"]["score_label"] = Text(scoreboard, text="Score", size=10, grid=[5,1])
-players["2"]["round_label"] = Text(scoreboard, text="Round", size=10, grid=[6,1])
+players["1"]["score_label"] = Text(scoreboard, font=font_default, text="Score", size=10, grid=[0,1])
+players["1"]["round_label"] = Text(scoreboard, font=font_default, text="Round", size=10, grid=[1,1])
+timer = Text(scoreboard, font=font_default, text="0", size=20, grid=[3,1])
+players["2"]["score_label"] = Text(scoreboard, font=font_default, text="Score", size=10, grid=[5,1])
+players["2"]["round_label"] = Text(scoreboard, font=font_default, text="Round", size=10, grid=[6,1])
 
-players["1"]["score"] = Text(scoreboard, text="0", size=20, grid=[0,2])
-players["1"]["round"] = Text(scoreboard, text="0", size=20, grid=[1,2])
-players["2"]["score"] = Text(scoreboard, text="0", size=20, grid=[5,2])
-players["2"]["round"] = Text(scoreboard, text="0", size=20, grid=[6,2])
+players["1"]["score"] = Text(scoreboard, font=font_default, text="0", size=20, grid=[0,2])
+players["1"]["round"] = Text(scoreboard, font=font_default, text="0", size=20, grid=[1,2])
+players["2"]["score"] = Text(scoreboard, font=font_default, text="0", size=20, grid=[5,2])
+players["2"]["round"] = Text(scoreboard, font=font_default, text="0", size=20, grid=[6,2])
 
 # Set up game grids
 
 game_box = Box(app, align="top", layout="grid")
-result = Text(game_box, text="Ready?", size=24, grid=[0,0,3,1])
+result = Text(game_box, font=font_default, text="Ready?", size=24, grid=[0,0,3,1])
 pictures_box = Box(game_box, layout="grid", grid=[0,1], visible=False)
-spacer3 = Text(game_box, text=" ", width=10, grid=[1,1])
+spacer3 = Text(game_box, font=font_default, text=" ", width=10, grid=[1,1])
 buttons_box = Box(game_box, layout="grid", grid=[2,1], visible=False)
-instructions = Text(game_box, text="Choose an option:", size=10, grid=[0,2,3,1])
+instructions = Text(game_box, font=font_default, text="Choose an option:", size=10, grid=[0,2,3,1])
+
+print("Font:", result.font)
 
 buttons = []
 pictures = []
