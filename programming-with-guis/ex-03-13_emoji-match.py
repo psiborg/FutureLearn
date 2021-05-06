@@ -227,7 +227,7 @@ def quit_app():
 
 #---[ Main ]------------------------------------------------------------------
 
-app = App("Emoji Match", layout="auto", width=640, height=480)
+app = App("Emoji Match", layout="auto", width=700, height=480)
 
 font_default = "JetBrains Mono"
 
@@ -236,14 +236,14 @@ player_num = ""
 
 # Set up High Score window
 
-wnd_hiscores = Window(app, title="High Scores", bg="#DDDDDD", visible=False)
+wnd_hiscores = Window(app, title="High Scores", bg="#DDDDDD", width=480, height=480, visible=False)
 wnd_hiscores.when_closed = clear_hiscores_window
 
 hi_scores = load_hiscores()
 
 # Set up Help window
 
-wnd_help = Window(app, title="Help", bg="#DDDDDD", visible=False)
+wnd_help = Window(app, title="Help", bg="#DDDDDD", width=700, height=480, visible=False)
 help_box = Box(wnd_help, align="top", width="fill", layout="grid")
 
 help_sec1_title = Text(help_box, font=font_default, text="How to play:", align="left", size=16, grid=[0,0])
